@@ -1,6 +1,5 @@
 package com.abc.service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,13 +9,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.abc.exception.TextSearchFileNotFoundException;
+import com.abc.exception.TextSearchFileReadException;
 import com.abc.helper.ReadParagraphHelper;
 import com.abc.model.SearchWordCount;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class SearchTextService {
 	
 	@Autowired
@@ -25,10 +31,12 @@ public class SearchTextService {
 	@Autowired
 	ReadParagraphHelper readParagraphHelper;
 	
-	public SearchWordCount searchTextFromFile(String[] searchWords) throws IOException {
+	private static final Logger log = 
+		    LogManager.getLogger(SearchTextService.class);
+	
+	public SearchWordCount searchTextFromFile(String[] searchWords) 
+			throws TextSearchFileReadException, TextSearchFileNotFoundException {
 
-		System.out.println(searchWords);
-		
 		Map<String, Integer> wordCountMap = readParagraphHelper.readParagraphCountWords();
 		Map<String, Integer> finalMap = new HashMap<String, Integer>();
 		
@@ -41,16 +49,16 @@ public class SearchTextService {
 			finalMap.put(token, count);
 		}
 		
-		System.out.println(finalMap);
 		List<Map<String, Integer>> list = new ArrayList<Map<String, Integer>>();
 		list.add(finalMap);
-		System.out.println(list);
+		log.info(list);
 		searchWordCount.setCounts(list);
 		return searchWordCount;
 
 	}
 	
-	public String getTopWordCount(int count) throws IOException {
+	public String getTopWordCount(int count) 
+			throws TextSearchFileReadException, TextSearchFileNotFoundException {
 		
 		Map<String, Integer> wordCountMap = readParagraphHelper.readParagraphCountWords();
 		
@@ -73,6 +81,7 @@ public class SearchTextService {
 			}
 			topWordCount.append("\n");
 		}
+		log.info(topWordCount.toString());
 		
 		return topWordCount.toString();
 	}
